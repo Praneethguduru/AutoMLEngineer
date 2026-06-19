@@ -11,6 +11,7 @@ from ml.feature_importance import get_feature_importance
 from ml.feature_filter import remove_identifier_columns
 from ml.consultant_agent import generate_insights
 from ml.confusion_matrix_report import generate_confusion_report
+from ml.target_detector import detect_target_column
 
 def main():
     # loading data
@@ -19,95 +20,56 @@ def main():
     # analyzing data
     report = analyze_dataset(df)
     
-    for key, value in report.items():
-        print(f"{key}: {value}")
-    
-    
-    df, removed_columns = (remove_identifier_columns(df))
+    df, removed_columns = remove_identifier_columns(df)
 
-    print("\nREMOVED IDENTIFIERS")
-
-    print(removed_columns)
+    # detecting target column
+    target_column = detect_target_column(df)
+    print(f"Detected Target Column: {target_column}")
 
     # classifying features
-    feature_report = classify_features(df, 'Churn')
-    print(feature_report)
+    feature_report = classify_features(df, target_column)
     
     # cleaning data
     df, cleaning_report = clean_dataset(df, feature_report)
-    print("\nCLEANING REPORT")
-
-    for item in cleaning_report:
-        print(item)
     
     # encoding features
-    df, encoding_report = engineer_features(df, feature_report, "Churn")
-
-    print("\nFEATURE ENGINEERING REPORT")
-
-    for item in encoding_report:
-        print(item)
+    df, encoding_report = engineer_features(df, feature_report, target_column)
 
     # training models
-    model_results = train_models(df,"Churn")
-
-    print("\nMODEL RESULTS")
-
-    for model, result in model_results.items():
-
-        print(f"\n{model}")
-
-        for metric, value in result["metrics"].items():
-
-            print(
-                f"{metric}: {value:.4f}"
-            )
+    model_results = train_models(df, target_column)
 
     # selecting best model
     best_model = select_best_model(model_results)
-    print("\nBEST MODEL")
-    print(best_model)
+    print(f"\nBest Model: {best_model['best_model']}")
+    for metric, value in best_model["metrics"].items():
+        print(f"  {metric}: {value:.4f}")
     
-    lr_results = model_results['Logistic Regression']
+    best_model_name = best_model["best_model"]
+    best_results = model_results[best_model_name]
 
-    confusion_report = (generate_confusion_report(
-        lr_results["y_test"],
-        lr_results["predictions"])
+    confusion_report = generate_confusion_report(
+        best_results["y_test"],
+        best_results["predictions"]
     )
-    print("\nCONFUSION MATRIX")
+    
+    print("\nConfusion Matrix:")
     print(confusion_report["confusion_matrix"])
 
-    print("\nCLASSIFICATION REPORT")
+    print("\nClassification Report:")
     print(confusion_report["classification_report"])
 
+    cv_results = cross_validate_model(df, target_column)
 
-
-
-
-
-
-
-    cv_results = cross_validate_model(df,"Churn")
-
-    print("\nCROSS VALIDATION")
-
+    print("Cross Validation (Logistic Regression):")
     for key, value in cv_results.items():
-        print(f"{key}: {value:.4f}")
+        print(f"  {key}: {value:.4f}")
 
-    feature_importance = get_feature_importance(df, "Churn")
-
-    print("\nTOP FEATURES")
-
-    for feature, score in list(feature_importance.items())[:10]:
-
-        print(f"{feature}: {score:.4f}")
-    
+    feature_importance = get_feature_importance(df, target_column)
     insights = generate_insights(feature_importance)
 
-    print("\nCONSULTANT REPORT")
-
+    print("\nConsultant Report / Key Drivers:")
     for insight in insights:
-        print(insight)
+        print(f"  - {insight}")
 
 if __name__ == "__main__":
     main()
