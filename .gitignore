@@ -221,3 +221,6 @@ __marimo__/
 #My test
 test.ipynb
 test.py
+
+#
+.DS_Store
