@@ -13,7 +13,7 @@ def detect_target_column(df):
     n_rows = len(df)
     
     # Common target keyword sets
-    primary_keywords = {'target', 'label', 'class', 'churn', 'y', 'default', 'output', 'decision'}
+    primary_keywords = {'target', 'label', 'class', 'churn', 'y', 'default', 'output', 'decision', 'survived', 'survive'}
     secondary_keywords = {'status', 'response', 'outcome', 'category', 'result'}
     
     for idx, col in enumerate(df.columns):
@@ -22,8 +22,12 @@ def detect_target_column(df):
         
         # 1. Cardinality check
         n_unique = df[col].nunique(dropna=True)
-        if n_unique <= 1 or n_unique == n_rows:
-            # Constant column or ID-like column (every row unique)
+        if n_unique <= 1:
+            scores[col] = -float('inf')
+            continue
+            
+        # Do not rule out as ID if it's a float column (regression targets are unique floats)
+        if n_unique == n_rows and not pd.api.types.is_float_dtype(df[col]):
             scores[col] = -float('inf')
             continue
             

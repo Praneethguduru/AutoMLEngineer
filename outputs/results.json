@@ -1,0 +1,54 @@
+{
+    "target": "Churn",
+    "problem_type": "classification",
+    "best_model": {
+        "best_model": "Logistic Regression",
+        "metrics": {
+            "accuracy": 0.8211497515968772,
+            "precision": 0.6850152905198776,
+            "recall": 0.6005361930294906,
+            "f1_score": 0.64
+        }
+    },
+    "all_models": {
+        "Logistic Regression": {
+            "accuracy": 0.8211497515968772,
+            "precision": 0.6850152905198776,
+            "recall": 0.6005361930294906,
+            "f1_score": 0.64
+        },
+        "Random Forest": {
+            "accuracy": 0.7892122072391767,
+            "precision": 0.6366906474820144,
+            "recall": 0.4745308310991957,
+            "f1_score": 0.543778801843318
+        },
+        "Decision Tree": {
+            "accuracy": 0.716820440028389,
+            "precision": 0.4666666666666667,
+            "recall": 0.4879356568364611,
+            "f1_score": 0.47706422018348627
+        },
+        "KNN": {
+            "accuracy": 0.772888573456352,
+            "precision": 0.5738161559888579,
+            "recall": 0.5522788203753352,
+            "f1_score": 0.5628415300546448
+        },
+        "SVM": {
+            "accuracy": 0.8097941802696949,
+            "precision": 0.6881720430107527,
+            "recall": 0.514745308310992,
+            "f1_score": 0.588957055214724
+        }
+    },
+    "cross_validation": {
+        "mean_f1": 0.6001432476073412,
+        "std_f1": 0.017186078432078696
+    },
+    "consultant_report": [
+        "Top driver: TotalCharges",
+        "Second driver: tenure",
+        "Third driver: MonthlyCharges"
+    ]
+}
