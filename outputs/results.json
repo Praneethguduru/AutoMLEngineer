@@ -1,54 +1,78 @@
 {
-    "target": "Churn",
+    "target": "Survived",
     "problem_type": "classification",
     "best_model": {
-        "best_model": "Logistic Regression",
+        "best_model": "KNN",
         "metrics": {
-            "accuracy": 0.8211497515968772,
-            "precision": 0.6850152905198776,
-            "recall": 0.6005361930294906,
-            "f1_score": 0.64
+            "accuracy": 0.8379888268156425,
+            "precision": 0.8,
+            "recall": 0.8108108108108109,
+            "f1_score": 0.8053691275167785
         }
     },
     "all_models": {
         "Logistic Regression": {
-            "accuracy": 0.8211497515968772,
-            "precision": 0.6850152905198776,
-            "recall": 0.6005361930294906,
-            "f1_score": 0.64
+            "accuracy": 0.8212290502793296,
+            "precision": 0.7763157894736842,
+            "recall": 0.7972972972972973,
+            "f1_score": 0.7866666666666666
         },
         "Random Forest": {
-            "accuracy": 0.7892122072391767,
-            "precision": 0.6366906474820144,
-            "recall": 0.4745308310991957,
-            "f1_score": 0.543778801843318
+            "accuracy": 0.8100558659217877,
+            "precision": 0.7702702702702703,
+            "recall": 0.7702702702702703,
+            "f1_score": 0.7702702702702703
         },
         "Decision Tree": {
-            "accuracy": 0.716820440028389,
-            "precision": 0.4666666666666667,
-            "recall": 0.4879356568364611,
-            "f1_score": 0.47706422018348627
+            "accuracy": 0.776536312849162,
+            "precision": 0.717948717948718,
+            "recall": 0.7567567567567568,
+            "f1_score": 0.7368421052631579
         },
         "KNN": {
-            "accuracy": 0.772888573456352,
-            "precision": 0.5738161559888579,
-            "recall": 0.5522788203753352,
-            "f1_score": 0.5628415300546448
+            "accuracy": 0.8379888268156425,
+            "precision": 0.8,
+            "recall": 0.8108108108108109,
+            "f1_score": 0.8053691275167785
         },
         "SVM": {
-            "accuracy": 0.8097941802696949,
-            "precision": 0.6881720430107527,
-            "recall": 0.514745308310992,
-            "f1_score": 0.588957055214724
+            "accuracy": 0.8268156424581006,
+            "precision": 0.8115942028985508,
+            "recall": 0.7567567567567568,
+            "f1_score": 0.7832167832167832
+        },
+        "Gradient Boosting": {
+            "accuracy": 0.8156424581005587,
+            "precision": 0.7887323943661971,
+            "recall": 0.7567567567567568,
+            "f1_score": 0.7724137931034483
+        },
+        "AdaBoost": {
+            "accuracy": 0.8156424581005587,
+            "precision": 0.7808219178082192,
+            "recall": 0.7702702702702703,
+            "f1_score": 0.7755102040816326
+        },
+        "XGBoost": {
+            "accuracy": 0.7988826815642458,
+            "precision": 0.7714285714285715,
+            "recall": 0.7297297297297297,
+            "f1_score": 0.75
+        },
+        "Voting Ensemble": {
+            "accuracy": 0.8379888268156425,
+            "precision": 0.8082191780821918,
+            "recall": 0.7972972972972973,
+            "f1_score": 0.8027210884353742
         }
     },
     "cross_validation": {
-        "mean_f1": 0.6001432476073412,
-        "std_f1": 0.017186078432078696
+        "mean_f1": 0.7648841105593605,
+        "std_f1": 0.03693831356813661
     },
     "consultant_report": [
-        "Top driver: TotalCharges",
-        "Second driver: tenure",
-        "Third driver: MonthlyCharges"
+        "Top driver: Age",
+        "Second driver: Fare_log",
+        "Third driver: Sex"
     ]
 }

@@ -38,6 +38,16 @@ def generate_shap_values(
     if scipy.sparse.issparse(X_preprocessed):
         X_preprocessed = X_preprocessed.toarray()
 
+    feature_names = pipeline.named_steps["preprocessor"].get_feature_names_out()
+    cleaned_feature_names = []
+    for name in feature_names:
+        if name.startswith("num__"):
+            cleaned_feature_names.append(name[5:])
+        elif name.startswith("cat__"):
+            cleaned_feature_names.append(name[5:])
+        else:
+            cleaned_feature_names.append(name)
+
     explainer = shap.TreeExplainer(
         pipeline.named_steps["model"]
     )
@@ -50,5 +60,6 @@ def generate_shap_values(
         "model": pipeline.named_steps["model"],
         "explainer": explainer,
         "shap_values": shap_values,
-        "preprocessed_features": X_preprocessed
+        "preprocessed_features": X_preprocessed,
+        "feature_names": cleaned_feature_names
     }

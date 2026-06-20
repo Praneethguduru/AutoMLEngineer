@@ -1,6 +1,9 @@
 import sys
 import os
 import glob
+import argparse
+import warnings
+warnings.filterwarnings("ignore")
 from ml import feature_importance
 from ml.data_loader import load_data
 from ml.analyzer import analyze_dataset
@@ -17,9 +20,18 @@ from ml.confusion_matrix_report import generate_confusion_report
 from ml.target_detector import detect_target_column
 from ml.problem_detector import detect_problem_type
 from ml.result_exporter import export_results
+from ml.model_tuner import tune_model
+import pickle
+import shutil
+from ml.report_generator import (
+    generate_model_comparison_chart,
+    generate_feature_importance_chart,
+    generate_confusion_matrix_chart,
+    generate_shap_charts
+)
 
 
-def run_automl_pipeline(dataset_path):
+def run_automl_pipeline(dataset_path, target_override=None):
     print(f"\n==========================================")
     print(f"Running AutoML Pipeline for: {dataset_path}")
     print(f"==========================================")
@@ -31,14 +43,30 @@ def run_automl_pipeline(dataset_path):
     # loading data
     df = load_data(dataset_path)
 
-    # analyzing data
-    report = analyze_dataset(df)
-    
+    # removing identifier columns
     df, removed_columns = remove_identifier_columns(df)
 
     # detecting target column
-    target_column = detect_target_column(df)
-    print(f"Detected Target Column: {target_column}")
+    if target_override and target_override in df.columns:
+        target_column = target_override
+        print(f"Using Specified Target Column: {target_column}")
+    else:
+        target_column = detect_target_column(df)
+        print(f"Detected Target Column: {target_column}")
+
+    # Drop rows where target column is null
+    original_len = len(df)
+    df = df.dropna(subset=[target_column])
+    dropped_nulls = original_len - len(df)
+    if dropped_nulls > 0:
+        print(f"Dropped {dropped_nulls} rows with null targets.")
+
+    if len(df) == 0:
+        print(f"Error: All rows have null targets for column '{target_column}'")
+        return
+
+    # analyzing data
+    report = analyze_dataset(df)
 
     # detecting problem type
     problem_type = detect_problem_type(df, target_column)
@@ -54,7 +82,7 @@ def run_automl_pipeline(dataset_path):
     df, encoding_report = engineer_features(df, feature_report, target_column, problem_type)
 
     # training models
-    model_results = train_models(df, target_column, problem_type, feature_report)
+    model_results, (X_train, X_test, y_train, y_test) = train_models(df, target_column, problem_type, feature_report)
 
     print("\nModel Results:")
     for model_name, res in model_results.items():
@@ -72,6 +100,89 @@ def run_automl_pipeline(dataset_path):
     best_results = model_results[best_model_name]
     best_pipeline = best_results["pipeline"]
 
+    # Hyperparameter Tuning
+    model_to_tune_name = best_model_name
+    model_to_tune_pipeline = best_pipeline
+    if best_model_name == "Voting Ensemble":
+        individual_results = {k: v for k, v in model_results.items() if k != "Voting Ensemble"}
+        best_ind = select_best_model(individual_results)
+        model_to_tune_name = best_ind["best_model"]
+        model_to_tune_pipeline = individual_results[model_to_tune_name]["pipeline"]
+        print(f"\nBest model is Voting Ensemble. Tuning best individual model instead: {model_to_tune_name}")
+    
+    tuned_pipeline, best_params = tune_model(model_to_tune_pipeline, model_to_tune_name, X_train, y_train, problem_type)
+    
+    # Evaluate tuned model
+    if best_params:
+        from ml.model_evaluater import evaluate_model
+        from ml.regression_evaluator import evaluate_regression
+        
+        tuned_predictions = tuned_pipeline.predict(X_test)
+        if problem_type == "regression":
+            tuned_metrics = evaluate_regression(y_test, tuned_predictions)
+        else:
+            tuned_metrics = evaluate_model(y_test, tuned_predictions)
+            
+        print("\nTuned Model Metrics:")
+        for metric, value in tuned_metrics.items():
+            print(f"  {metric}: {value:.4f}")
+            
+        # Compare original best and tuned model
+        metric_to_compare = "r2" if problem_type == "regression" else "f1_score"
+        original_metric_val = best_model["metrics"][metric_to_compare]
+        tuned_metric_val = tuned_metrics.get(metric_to_compare, -float("inf"))
+        
+        if tuned_metric_val > original_metric_val:
+            print(f"\nTuned model performed better ({tuned_metric_val:.4f} vs {original_metric_val:.4f}). Using tuned model as the final pipeline.")
+            final_pipeline = tuned_pipeline
+            final_model_name = f"Tuned {model_to_tune_name}"
+            final_metrics = tuned_metrics
+            
+            # Update best_model and model_results
+            best_model = {
+                "best_model": final_model_name,
+                "metrics": final_metrics
+            }
+            model_results[final_model_name] = {
+                "metrics": final_metrics,
+                "y_test": y_test,
+                "predictions": tuned_predictions,
+                "pipeline": final_pipeline
+            }
+        else:
+            print(f"\nOriginal best model performed better or equal ({original_metric_val:.4f} vs {tuned_metric_val:.4f}). Using {best_model_name} as the final pipeline.")
+            final_pipeline = best_pipeline
+            final_model_name = best_model_name
+            final_metrics = best_model["metrics"]
+    else:
+        final_pipeline = best_pipeline
+        final_model_name = best_model_name
+        final_metrics = best_model["metrics"]
+
+    # Model Persistence
+    dataset_name = os.path.splitext(os.path.basename(dataset_path))[0]
+    model_save_path = f"outputs/{dataset_name}_best_model.pkl"
+    os.makedirs("outputs", exist_ok=True)
+    with open(model_save_path, "wb") as f:
+        pickle.dump(final_pipeline, f)
+    print(f"Fitted best model pipeline saved to: {model_save_path}")
+    try:
+        shutil.copy2(model_save_path, "outputs/best_model.pkl")
+    except Exception as e:
+        print(f"Warning: Could not copy best_model.pkl: {e}")
+
+    # Generate Model Comparison Chart
+    try:
+        generate_model_comparison_chart(model_results, problem_type, dataset_name)
+    except Exception as e:
+        print(f"Warning: Could not generate model comparison chart: {e}")
+
+    # Bind variables back for cross-validation and confusion reporting
+    best_results = model_results[final_model_name]
+    best_pipeline = final_pipeline
+    best_model_name = final_model_name
+
+
     cv_results = {}
     if problem_type == "classification":
         confusion_report = generate_confusion_report(
@@ -84,6 +195,12 @@ def run_automl_pipeline(dataset_path):
 
         print("\nClassification Report:")
         print(confusion_report["classification_report"])
+
+        # Generate Confusion Matrix Chart
+        try:
+            generate_confusion_matrix_chart(best_results["y_test"], best_results["predictions"], dataset_name)
+        except Exception as e:
+            print(f"Warning: Could not generate confusion matrix heatmap: {e}")
 
         cv_results = cross_validate_model(df, target_column, problem_type, best_pipeline)
 
@@ -104,6 +221,18 @@ def run_automl_pipeline(dataset_path):
     for insight in insights:
         print(f"  - {insight}")
 
+    # Generate Feature Importance Chart
+    try:
+        generate_feature_importance_chart(feature_importance, dataset_name)
+    except Exception as e:
+        print(f"Warning: Could not generate feature importance chart: {e}")
+
+    # Generate SHAP charts
+    try:
+        generate_shap_charts(df, target_column, feature_report, problem_type, dataset_name)
+    except Exception as e:
+        print(f"Warning: Could not generate SHAP charts: {e}")
+
     dataset_name = os.path.splitext(os.path.basename(dataset_path))[0]
     output_file = f"outputs/{dataset_name}_results.json"
 
@@ -117,12 +246,20 @@ def run_automl_pipeline(dataset_path):
         output_file=output_file
     )
     print(f"\nResults exported to: {export_path}")
+    try:
+        shutil.copy2(export_path, "outputs/results.json")
+    except Exception as e:
+        print(f"Warning: Could not copy results.json: {e}")
 
 
 def main():
-    if len(sys.argv) > 1:
-        dataset_paths = sys.argv[1:]
-    else:
+    parser = argparse.ArgumentParser(description="AutoML Pipeline Runner")
+    parser.add_argument("datasets", nargs="*", help="Optional dataset paths. If not specified, scans data/raw/")
+    parser.add_argument("--target", default=None, help="Explicit target column name (optional)")
+    args = parser.parse_args()
+
+    dataset_paths = args.datasets
+    if not dataset_paths:
         raw_dir = "data/raw"
         if os.path.exists(raw_dir):
             dataset_paths = glob.glob(os.path.join(raw_dir, "*.csv"))
@@ -135,7 +272,7 @@ def main():
 
     for path in dataset_paths:
         try:
-            run_automl_pipeline(path)
+            run_automl_pipeline(path, target_override=args.target)
         except Exception as e:
             print(f"\nError running AutoML pipeline on {path}: {e}")
             import traceback
