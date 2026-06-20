@@ -1,5 +1,6 @@
 import shap
 import scipy.sparse
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from ml.preprocessor_builder import build_preprocessor
@@ -48,18 +49,27 @@ def generate_shap_values(
         else:
             cleaned_feature_names.append(name)
 
+    # Subsample for speed if the dataset is large (max 100 samples)
+    max_shap_samples = 100
+    if X_preprocessed.shape[0] > max_shap_samples:
+        np.random.seed(42)
+        indices = np.random.choice(X_preprocessed.shape[0], max_shap_samples, replace=False)
+        X_preprocessed_sampled = X_preprocessed[indices]
+    else:
+        X_preprocessed_sampled = X_preprocessed
+
     explainer = shap.TreeExplainer(
         pipeline.named_steps["model"]
     )
 
     shap_values = explainer.shap_values(
-        X_preprocessed
+        X_preprocessed_sampled
     )
 
     return {
         "model": pipeline.named_steps["model"],
         "explainer": explainer,
         "shap_values": shap_values,
-        "preprocessed_features": X_preprocessed,
+        "preprocessed_features": X_preprocessed_sampled,
         "feature_names": cleaned_feature_names
     }
