@@ -18,8 +18,7 @@ The system is organized into modular components located in the `src/ml/` folder,
 5. **Preprocessing & Training Pipeline** (`preprocessor_builder.py` & `model_trainer.py`): Bundles data preprocessing (standard scaling and one-hot encoding) with 8 classification or 10 regression models inside secure scikit-learn `Pipeline` objects.
 6. **Voting Ensemble** (`model_trainer.py`): Combines the top 3 models automatically to form a superior joint estimator (`VotingClassifier` or `VotingRegressor`).
 7. **Hyperparameter Tuning** (`model_tuner.py`): Employs `RandomizedSearchCV` on a fast grid to optimize parameters for the best individual model.
-8. **Explainability & SHAP** (`explainability.py`): Fits a tree model on preprocessed features to extract SHAP values representing feature contribution/impact.
-9. **Result Exporting & Reporting** (`result_exporter.py` & `report_generator.py`): Saves the fitted model pipeline, exports performance summaries in JSON, and generates professional plots.
+8. **Result Exporting & Reporting** (`result_exporter.py` & `report_generator.py`): Saves the fitted model pipeline, exports performance summaries in JSON, and generates professional plots.
 
 ---
 
@@ -42,13 +41,6 @@ A clean, annotated heatmap displaying predicted versus actual classes.
 
 ![Confusion Matrix Heatmap](outputs/confusion_matrix.png)
 
-### 4. SHAP Feature Impact Plots
-Two visual assets representing feature-level explainability:
-- **SHAP Summary Plot:** Beeswarm-style impact plot demonstrating how high or low values of a feature affect the target variable.
-- **SHAP Bar Plot:** Feature rank chart based on mean absolute SHAP values.
-
-![SHAP Summary Plot](outputs/shap_summary.png)
-![SHAP Bar Plot](outputs/shap_bar.png)
 
 ---
 

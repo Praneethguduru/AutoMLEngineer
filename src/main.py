@@ -26,8 +26,7 @@ import shutil
 from ml.report_generator import (
     generate_model_comparison_chart,
     generate_feature_importance_chart,
-    generate_confusion_matrix_chart,
-    generate_shap_charts
+    generate_confusion_matrix_chart
 )
 
 
@@ -227,11 +226,6 @@ def run_automl_pipeline(dataset_path, target_override=None):
     except Exception as e:
         print(f"Warning: Could not generate feature importance chart: {e}")
 
-    # Generate SHAP charts
-    try:
-        generate_shap_charts(df, target_column, feature_report, problem_type, dataset_name)
-    except Exception as e:
-        print(f"Warning: Could not generate SHAP charts: {e}")
 
     dataset_name = os.path.splitext(os.path.basename(dataset_path))[0]
     output_file = f"outputs/{dataset_name}_results.json"

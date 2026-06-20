@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from sklearn.metrics import confusion_matrix
-from ml.explainability import generate_shap_values
-import shap
 
 # Set premium styling
 sns.set_theme(style="white")
@@ -161,38 +159,4 @@ def generate_confusion_matrix_chart(y_test, predictions, dataset_name):
     _save_dual_paths(fig, dataset_name, "confusion_matrix.png")
     plt.close(fig)
 
-def generate_shap_charts(df, target_column, feature_report, problem_type, dataset_name):
-    """Generates and saves SHAP summary and SHAP bar charts from explainability module."""
-    try:
-        # Run explainability runner
-        shap_res = generate_shap_values(df, target_column, feature_report, problem_type)
-        
-        shap_values = shap_res["shap_values"]
-        X_preprocessed = shap_res["preprocessed_features"]
-        feature_names = shap_res["feature_names"]
-        
-        # 1. Generate SHAP Summary (Beeswarm style)
-        fig_summary = plt.figure(figsize=(10, 6))
-        # Handle different SHAP formats safely
-        if isinstance(shap_values, list):
-            # If list of 2 arrays, pick class 1 (standard positive class for beeswarm)
-            if len(shap_values) == 2:
-                shap.summary_plot(shap_values[1], X_preprocessed, feature_names=feature_names, show=False)
-            else:
-                shap.summary_plot(shap_values, X_preprocessed, feature_names=feature_names, show=False)
-        else:
-            shap.summary_plot(shap_values, X_preprocessed, feature_names=feature_names, show=False)
-            
-        plt.title(f"SHAP Feature Impact Summary ({dataset_name})", pad=20, weight='bold', fontsize=14)
-        _save_dual_paths(fig_summary, dataset_name, "shap_summary.png")
-        plt.close(fig_summary)
-        
-        # 2. Generate SHAP Bar plot (mean absolute SHAP)
-        fig_bar = plt.figure(figsize=(10, 6))
-        shap.summary_plot(shap_values, X_preprocessed, feature_names=feature_names, plot_type="bar", show=False)
-        plt.title(f"SHAP Feature Importance (Mean Absolute Value) ({dataset_name})", pad=20, weight='bold', fontsize=14)
-        _save_dual_paths(fig_bar, dataset_name, "shap_bar.png")
-        plt.close(fig_bar)
-        
-    except Exception as e:
-        print(f"Gracefully skipping SHAP visualization generation: {e}")
+

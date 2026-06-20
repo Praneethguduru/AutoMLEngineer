@@ -1,78 +1,78 @@
 {
-    "target": "Pclass",
+    "target": "Churn",
     "problem_type": "classification",
     "best_model": {
-        "best_model": "Voting Ensemble",
+        "best_model": "Logistic Regression",
         "metrics": {
-            "accuracy": 0.9720670391061452,
-            "precision": 0.96875,
-            "recall": 0.9571183533447685,
-            "f1_score": 0.9626577126577126
+            "accuracy": 0.8197303051809794,
+            "precision": 0.6888888888888889,
+            "recall": 0.5817694369973191,
+            "f1_score": 0.6308139534883721
         }
     },
     "all_models": {
         "Logistic Regression": {
-            "accuracy": 0.8379888268156425,
-            "precision": 0.8028875158626141,
-            "recall": 0.7478928051052215,
-            "f1_score": 0.7640515685555483
+            "accuracy": 0.8197303051809794,
+            "precision": 0.6888888888888889,
+            "recall": 0.5817694369973191,
+            "f1_score": 0.6308139534883721
         },
         "Random Forest": {
-            "accuracy": 0.9664804469273743,
-            "precision": 0.9601715686274509,
-            "recall": 0.9546407470935773,
-            "f1_score": 0.956761477393611
+            "accuracy": 0.7927608232789212,
+            "precision": 0.6391752577319587,
+            "recall": 0.49865951742627346,
+            "f1_score": 0.5602409638554217
         },
         "Decision Tree": {
-            "accuracy": 0.9553072625698324,
-            "precision": 0.938676545887172,
-            "recall": 0.9436605863873058,
-            "f1_score": 0.9407953421236154
+            "accuracy": 0.7132718239886444,
+            "precision": 0.4573002754820937,
+            "recall": 0.4450402144772118,
+            "f1_score": 0.45108695652173914
         },
         "KNN": {
-            "accuracy": 0.8435754189944135,
-            "precision": 0.8207070707070706,
-            "recall": 0.8047179033180251,
-            "f1_score": 0.8094931271477663
+            "accuracy": 0.7629524485450674,
+            "precision": 0.5582089552238806,
+            "recall": 0.5013404825737265,
+            "f1_score": 0.5282485875706214
         },
         "SVM": {
-            "accuracy": 0.8324022346368715,
-            "precision": 0.8365705931495405,
-            "recall": 0.7508253564248696,
-            "f1_score": 0.775419662041251
+            "accuracy": 0.8197303051809794,
+            "precision": 0.6925566343042071,
+            "recall": 0.5737265415549598,
+            "f1_score": 0.6275659824046921
         },
         "Gradient Boosting": {
-            "accuracy": 0.9664804469273743,
-            "precision": 0.959170653907496,
-            "recall": 0.9535341239540874,
-            "f1_score": 0.956194514705153
+            "accuracy": 0.8147622427253371,
+            "precision": 0.6879194630872483,
+            "recall": 0.5495978552278821,
+            "f1_score": 0.6110283159463488
         },
         "AdaBoost": {
-            "accuracy": 0.8100558659217877,
-            "precision": 0.7807843137254902,
-            "recall": 0.7929262189761278,
-            "f1_score": 0.7820546785311703
+            "accuracy": 0.8026969481902059,
+            "precision": 0.6507936507936508,
+            "recall": 0.5495978552278821,
+            "f1_score": 0.5959302325581395
         },
         "XGBoost": {
-            "accuracy": 0.9664804469273743,
-            "precision": 0.9592803030303031,
-            "recall": 0.9508290451686677,
-            "f1_score": 0.9546972265418868
+            "accuracy": 0.7757274662881476,
+            "precision": 0.5887850467289719,
+            "recall": 0.5067024128686327,
+            "f1_score": 0.5446685878962536
         },
         "Voting Ensemble": {
-            "accuracy": 0.9720670391061452,
-            "precision": 0.96875,
-            "recall": 0.9571183533447685,
-            "f1_score": 0.9626577126577126
+            "accuracy": 0.8211497515968772,
+            "precision": 0.6970684039087948,
+            "recall": 0.5737265415549598,
+            "f1_score": 0.6294117647058823
         }
     },
     "cross_validation": {
-        "mean_f1_macro": 0.9387359913927134,
-        "std_f1_macro": 0.014923417467941354
+        "mean_f1": 0.5941557993944543,
+        "std_f1": 0.024622835784874942
     },
     "consultant_report": [
-        "Top driver: Fare_log",
-        "Second driver: Fare",
-        "Third driver: Deck"
+        "Top driver: tenure",
+        "Second driver: MonthlyCharges",
+        "Third driver: Contract"
     ]
 }
