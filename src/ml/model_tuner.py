@@ -76,8 +76,7 @@ def tune_model(pipeline, model_name, X_train, y_train, problem_type):
         n_iter=5,
         cv=3,
         scoring=scoring,
-        random_state=42,
-        n_jobs=-1
+        random_state=42
     )
     
     try:
