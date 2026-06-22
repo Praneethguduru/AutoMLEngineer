@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd 
 from workflows.state import AutoMLState
-from tools.dataset_tools import analyze_dataset_tool, detect_target_tool, detect_problem_type_tool
+from tools.dataset_tools import analyze_dataset_tool, detect_target_tool, detect_problem_type_tool, classify_features_tool
 from ml.data_loader import load_data
 
 
@@ -45,7 +45,9 @@ def dataset_analyst_node(state: AutoMLState):
 
     target = detect_target_tool(df)
 
-    problem_type = detect_problem_type_tool(df,target)
+    problem_type = detect_problem_type_tool(df, target)
+    
+    feature_report = classify_features_tool(df, target)
 
     report = analyze_dataset_tool(df)
 
@@ -56,10 +58,10 @@ def dataset_analyst_node(state: AutoMLState):
         .to_dict()
     )
 
-    return make_json_serializable({
+    return {
         **state,
-        "df": df,
-        "target_column": target,
-        "problem_type": problem_type,
-        "dataset_report": report
-    })
+        "target_column": make_json_serializable(target),
+        "problem_type": make_json_serializable(problem_type),
+        "dataset_report": make_json_serializable(report),
+        "feature_report": make_json_serializable(feature_report),
+    }
